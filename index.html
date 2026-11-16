@@ -16,62 +16,111 @@
             background-size: 100% 100%, 100% 100%, 36px 36px, 36px 36px;
         }
         .glass-card {
-            background: rgba(15, 23, 42, 0.72);
+            background: rgba(15, 23, 42, 0.78);
             backdrop-filter: blur(16px);
-            border: 1px solid rgba(51, 65, 85, 0.7);
+            border: 1px solid rgba(51, 65, 85, 0.75);
         }
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(6px); }
             to { opacity: 1; transform: translateY(0); }
         }
         .animate-fade {
-            animation: fadeIn 0.3s ease-out forwards;
+            animation: fadeIn 0.25s ease-out forwards;
         }
     </style>
 </head>
 <body class="text-slate-100 min-h-screen font-sans antialiased">
 
     <!-- ========================================== -->
-    <!-- EKRAN LOGOWANIA (GLASSMORPHISM AUTH)       -->
+    <!-- EKRAN LOGOWANIA I REJESTRACJI (Z AVATAREM) -->
     <!-- ========================================== -->
     <div id="auth-screen" class="min-h-screen flex items-center justify-center p-4">
-        <div class="glass-card p-8 md:p-10 rounded-3xl shadow-2xl w-full max-w-md relative overflow-hidden">
+        <div class="glass-card p-8 md:p-9 rounded-3xl shadow-2xl w-full max-w-md relative overflow-hidden">
             <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-sky-500"></div>
 
-            <div class="text-center mb-8">
-                <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-indigo-500/20 to-sky-500/20 border border-indigo-500/30 flex items-center justify-center text-3xl shadow-lg">
+            <!-- Nagłówek -->
+            <div class="text-center mb-6">
+                <div class="w-16 h-16 mx-auto mb-3 rounded-2xl bg-gradient-to-br from-indigo-500/20 to-sky-500/20 border border-indigo-500/30 flex items-center justify-center text-3xl shadow-lg">
                     🛡️
                 </div>
-                <h1 class="text-3xl font-extrabold bg-gradient-to-r from-indigo-400 via-purple-300 to-sky-400 bg-clip-text text-transparent">
+                <h1 class="text-2xl font-extrabold bg-gradient-to-r from-indigo-400 via-purple-300 to-sky-400 bg-clip-text text-transparent">
                     CloudShort Shield
                 </h1>
-                <p class="text-slate-400 text-xs mt-2 tracking-wide uppercase font-semibold">
-                    AI Anti-DDoS & Edge Geo-Fencing Platform
-                </p>
+                <p class="text-slate-400 text-xs mt-1">Chmurowa platforma AI Anti-DDoS & Geo-Fencing</p>
             </div>
 
-            <div id="auth-error" class="hidden bg-rose-500/15 border border-rose-500/50 text-rose-300 text-xs p-3.5 rounded-xl mb-5 text-center"></div>
+            <!-- Zakładki (Tabs): Logowanie / Rejestracja -->
+            <div class="grid grid-cols-2 bg-slate-950/90 p-1 rounded-xl border border-slate-800 mb-6">
+                <button id="tab-login" onclick="switchAuthTab('login')" class="py-2.5 rounded-lg text-xs font-bold transition bg-indigo-600 text-white shadow">
+                    🔑 Logowanie
+                </button>
+                <button id="tab-register" onclick="switchAuthTab('register')" class="py-2.5 rounded-lg text-xs font-bold transition text-slate-400 hover:text-white">
+                    ✨ Rejestracja konta
+                </button>
+            </div>
 
+            <div id="auth-error" class="hidden bg-rose-500/15 border border-rose-500/50 text-rose-300 text-xs p-3 rounded-xl mb-4 text-center"></div>
+
+            <!-- Formularz -->
             <div class="space-y-4">
                 <div>
-                    <label class="block text-xs text-slate-400 uppercase font-bold tracking-wider mb-1.5">Nazwa użytkownika</label>
-                    <input id="auth-username" type="text" placeholder="np. danylo" 
-                           class="w-full bg-slate-950/80 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition">
+                    <label class="block text-xs text-slate-400 uppercase font-bold tracking-wider mb-1.5">Nazwa użytkownika (Login)</label>
+                    <input id="auth-username" type="text" placeholder="Wprowadź swój login..." 
+                           class="w-full bg-slate-950/80 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-indigo-500 transition">
                 </div>
+
                 <div>
                     <label class="block text-xs text-slate-400 uppercase font-bold tracking-wider mb-1.5">Hasło dostępu</label>
-                    <input id="auth-password" type="password" placeholder="••••••••" 
-                           class="w-full bg-slate-950/80 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition">
+                    <input id="auth-password" type="password" placeholder="Wprowadź hasło (min. 3 znaki)..." 
+                           class="w-full bg-slate-950/80 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-indigo-500 transition">
                 </div>
-                <div class="grid grid-cols-2 gap-3 pt-3">
-                    <button onclick="handleAuth('login')" class="bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-400 py-3 rounded-xl font-bold text-sm shadow-lg shadow-indigo-500/20 transition">
-                        🔑 Zaloguj się
-                    </button>
-                    <button onclick="handleAuth('register')" class="bg-slate-800 hover:bg-slate-700 border border-slate-600 py-3 rounded-xl font-bold text-sm transition">
-                        ✨ Rejestracja
+
+                <!-- Wybór zdjęcia profilowego (widoczny tylko przy rejestracji) -->
+                <div id="avatar-picker-block" class="hidden pt-1 animate-fade">
+                    <label class="block text-xs text-sky-400 uppercase font-bold tracking-wider mb-2">Wybierz zdjęcie profilowe (Awatar)</label>
+                    <div class="grid grid-cols-6 gap-2" id="avatar-options">
+                        <button type="button" onclick="selectAvatar('👨‍💻')" class="avatar-btn p-2.5 rounded-xl bg-indigo-600/30 border-2 border-indigo-500 text-2xl flex items-center justify-center transition">👨‍💻</button>
+                        <button type="button" onclick="selectAvatar('👩‍💻')" class="avatar-btn p-2.5 rounded-xl bg-slate-950 border border-slate-700 hover:border-slate-500 text-2xl flex items-center justify-center transition">👩‍💻</button>
+                        <button type="button" onclick="selectAvatar('🦊')" class="avatar-btn p-2.5 rounded-xl bg-slate-950 border border-slate-700 hover:border-slate-500 text-2xl flex items-center justify-center transition">🦊</button>
+                        <button type="button" onclick="selectAvatar('🚀')" class="avatar-btn p-2.5 rounded-xl bg-slate-950 border border-slate-700 hover:border-slate-500 text-2xl flex items-center justify-center transition">🚀</button>
+                        <button type="button" onclick="selectAvatar('🤖')" class="avatar-btn p-2.5 rounded-xl bg-slate-950 border border-slate-700 hover:border-slate-500 text-2xl flex items-center justify-center transition">🤖</button>
+                        <button type="button" onclick="selectAvatar('🛡️')" class="avatar-btn p-2.5 rounded-xl bg-slate-950 border border-slate-700 hover:border-slate-500 text-2xl flex items-center justify-center transition">🛡️</button>
+                    </div>
+                </div>
+
+                <div class="pt-2">
+                    <button id="auth-submit-btn" onclick="submitAuth()" class="w-full bg-gradient-to-r from-indigo-600 to-sky-500 hover:from-indigo-500 hover:to-sky-400 py-3.5 rounded-xl font-bold text-sm shadow-lg shadow-indigo-500/25 transition">
+                        🔑 Zaloguj się do panelu
                     </button>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- MODAL POWIĘKSZENIA KODU QR (DO SKANOWANIA) -->
+    <!-- ========================================== -->
+    <div id="qr-modal" onclick="closeQrModal(event)" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-fade">
+        <div onclick="event.stopPropagation()" class="glass-card p-8 rounded-3xl max-w-sm w-full text-center shadow-2xl border border-indigo-500/40 relative">
+            <button onclick="document.getElementById('qr-modal').classList.add('hidden')" class="absolute top-4 right-4 bg-slate-800 hover:bg-slate-700 text-slate-300 w-8 h-8 rounded-full text-xs font-bold transition">
+                ✖
+            </button>
+            <span class="inline-block bg-indigo-500/20 text-indigo-300 text-xs font-bold px-3 py-1 rounded-full border border-indigo-500/30 mb-3">
+                📱 Skanuj aparatem telefonu
+            </span>
+            <h3 class="text-lg font-bold text-white mb-4">Powiększony Kod QR</h3>
+            
+            <div class="bg-white p-4 rounded-2xl inline-block shadow-xl mb-4">
+                <img id="qr-modal-img" src="" alt="Duży Kod QR" class="w-60 h-60 mx-auto">
+            </div>
+
+            <div class="bg-slate-950/90 border border-slate-800 rounded-xl p-3 mb-4">
+                <p id="qr-modal-url" class="font-mono text-xs text-indigo-400 break-all"></p>
+            </div>
+
+            <button id="qr-modal-copy-btn" onclick="copyFromModal()" class="w-full bg-indigo-600 hover:bg-indigo-500 py-2.5 rounded-xl font-bold text-xs transition">
+                📋 Skopiuj link do schowka
+            </button>
         </div>
     </div>
 
@@ -88,12 +137,8 @@
                 <div>
                     <div class="flex flex-wrap items-center gap-2.5">
                         <h1 class="text-2xl font-extrabold tracking-tight text-white">CloudShort Shield</h1>
-                        <span class="bg-purple-500/15 text-purple-300 text-[11px] font-bold px-2.5 py-0.5 rounded-full border border-purple-500/30">
-                            🤖 AI Anti-DDoS
-                        </span>
-                        <span class="bg-sky-500/15 text-sky-300 text-[11px] font-bold px-2.5 py-0.5 rounded-full border border-sky-500/30">
-                            🌍 Geo-Fencing
-                        </span>
+                        <span class="bg-purple-500/15 text-purple-300 text-[11px] font-bold px-2.5 py-0.5 rounded-full border border-purple-500/30">🤖 AI Anti-DDoS</span>
+                        <span class="bg-sky-500/15 text-sky-300 text-[11px] font-bold px-2.5 py-0.5 rounded-full border border-sky-500/30">🌍 Geo-Fencing</span>
                         <span class="bg-emerald-500/15 text-emerald-300 text-[11px] font-bold px-2.5 py-0.5 rounded-full border border-emerald-500/30 flex items-center gap-1.5">
                             <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span> LIVE
                         </span>
@@ -103,13 +148,15 @@
             </div>
 
             <div class="flex items-center gap-3">
-                <div class="bg-slate-950/80 border border-slate-800 px-3.5 py-2 rounded-xl flex items-center gap-2 text-xs">
-                    <span class="w-2 h-2 rounded-full bg-indigo-400"></span>
-                    <span class="text-slate-400">Konto:</span>
-                    <span id="current-user-label" class="font-bold text-white"></span>
+                <div class="bg-slate-950/90 border border-slate-700 px-3.5 py-2 rounded-xl flex items-center gap-2.5 text-xs shadow">
+                    <span id="current-user-avatar" class="text-lg">👨‍💻</span>
+                    <div>
+                        <span class="text-slate-400 block text-[10px] uppercase">Zalogowany użytkownik</span>
+                        <span id="current-user-label" class="font-bold text-white"></span>
+                    </div>
                 </div>
                 <a href="/docs" target="_blank" class="bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold px-3.5 py-2.5 rounded-xl border border-slate-700 transition">
-                    📄 Swagger API
+                    📄 API
                 </a>
                 <button onclick="logout()" class="bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 border border-rose-500/30 text-xs font-semibold px-3.5 py-2.5 rounded-xl transition">
                     🚪 Wyloguj
@@ -117,7 +164,7 @@
             </div>
         </header>
 
-        <!-- Formularz tworzenia linku z przyciskami krajów -->
+        <!-- Formularz tworzenia linku -->
         <div class="glass-card p-6 md:p-7 rounded-2xl mb-8 shadow-xl relative overflow-hidden">
             <div class="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-indigo-500 to-sky-500"></div>
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-end">
@@ -125,7 +172,7 @@
                     <label class="block text-xs text-slate-400 uppercase font-bold tracking-wider mb-2">
                         🔗 Docelowy adres URL do skrócenia
                     </label>
-                    <input id="url-input" type="text" placeholder="np. https://pwr.edu.pl lub https://twitch.tv/..." 
+                    <input id="url-input" type="text" placeholder="Wklej długi adres strony (np. https://pwr.edu.pl)..." 
                            class="w-full bg-slate-950/90 border border-slate-700 rounded-xl px-4 py-3.5 text-white text-sm focus:outline-none focus:border-indigo-500 transition">
                 </div>
 
@@ -144,15 +191,15 @@
                 </div>
             </div>
 
-            <!-- Szybki wybór krajów (Flagi) -->
+            <!-- Szybki wybór krajów -->
             <div class="mt-4 pt-4 border-t border-slate-800/80 flex flex-wrap items-center gap-2 text-xs">
-                <span class="text-slate-400 mr-1">Szybkie dodawanie blokady kraju:</span>
+                <span class="text-slate-400 mr-1">Wybierz kraje do zablokowania:</span>
                 <button type="button" onclick="toggleCountry('IN')" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-sky-500/20 border border-slate-700 hover:border-sky-500/50 transition">🇮🇳 Indie (IN)</button>
                 <button type="button" onclick="toggleCountry('CN')" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-sky-500/20 border border-slate-700 hover:border-sky-500/50 transition">🇨🇳 Chiny (CN)</button>
                 <button type="button" onclick="toggleCountry('US')" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-sky-500/20 border border-slate-700 hover:border-sky-500/50 transition">🇺🇸 USA (US)</button>
                 <button type="button" onclick="toggleCountry('DE')" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-sky-500/20 border border-slate-700 hover:border-sky-500/50 transition">🇩🇪 Niemcy (DE)</button>
                 <button type="button" onclick="toggleCountry('BR')" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-sky-500/20 border border-slate-700 hover:border-sky-500/50 transition">🇧🇷 Brazylia (BR)</button>
-                <button type="button" onclick="document.getElementById('geo-input').value=''" class="px-2.5 py-1 rounded-lg text-slate-400 hover:text-white underline ml-auto">Wyczyść kraje</button>
+                <button type="button" onclick="document.getElementById('geo-input').value=''" class="px-2.5 py-1 rounded-lg text-slate-400 hover:text-white underline ml-auto">Wyczyść blokadę</button>
             </div>
         </div>
 
@@ -192,9 +239,9 @@
         <div class="glass-card rounded-2xl overflow-hidden shadow-xl mb-8">
             <div class="p-5 border-b border-slate-800 flex justify-between items-center">
                 <h2 class="font-bold text-slate-100 flex items-center gap-2">
-                    <span>📡</span> Monitorowane linki i telemetria bezpieczeństwa
+                    <span>📡</span> Twoje linki (Kliknij QR aby powiększyć lub skopiuj link)
                 </h2>
-                <span class="text-xs text-emerald-400 font-mono">Odświeżanie: 1.5s</span>
+                <span class="text-xs text-emerald-400 font-mono">Live: 1.5s</span>
             </div>
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse">
@@ -202,10 +249,10 @@
                         <tr>
                             <th class="p-4">Skrócony link</th>
                             <th class="p-4">Geo-Block</th>
-                            <th class="p-4">Kod QR</th>
+                            <th class="p-4">Kod QR (Kliknij)</th>
                             <th class="p-4">Ruch</th>
                             <th class="p-4">Ocena Ryzyka AI</th>
-                            <th class="p-4 text-right">Symulacja Ataków i Akcje</th>
+                            <th class="p-4 text-right">Testy i Akcje</th>
                         </tr>
                     </thead>
                     <tbody id="links-table" class="divide-y divide-slate-800/70 text-sm"></tbody>
@@ -233,8 +280,108 @@
 
     <script>
         let currentUser = localStorage.getItem('cloudshort_user') || null;
+        let currentAvatar = localStorage.getItem('cloudshort_avatar') || '👨‍💻';
+        let authMode = 'login';
+        let selectedAvatar = '👨‍💻';
         let activeLogCode = null;
         let liveInterval = null;
+
+        // Przełączanie zakładek Logowanie / Rejestracja
+        function switchAuthTab(mode) {
+            authMode = mode;
+            const tabLogin = document.getElementById('tab-login');
+            const tabRegister = document.getElementById('tab-register');
+            const avatarBlock = document.getElementById('avatar-picker-block');
+            const submitBtn = document.getElementById('auth-submit-btn');
+            document.getElementById('auth-error').classList.add('hidden');
+
+            if (mode === 'login') {
+                tabLogin.className = "py-2.5 rounded-lg text-xs font-bold transition bg-indigo-600 text-white shadow";
+                tabRegister.className = "py-2.5 rounded-lg text-xs font-bold transition text-slate-400 hover:text-white";
+                avatarBlock.classList.add('hidden');
+                submitBtn.innerText = "🔑 Zaloguj się do panelu";
+            } else {
+                tabRegister.className = "py-2.5 rounded-lg text-xs font-bold transition bg-indigo-600 text-white shadow";
+                tabLogin.className = "py-2.5 rounded-lg text-xs font-bold transition text-slate-400 hover:text-white";
+                avatarBlock.classList.remove('hidden');
+                submitBtn.innerText = "✨ Utwórz nowe konto";
+            }
+        }
+
+        function selectAvatar(emoji) {
+            selectedAvatar = emoji;
+            document.querySelectorAll('.avatar-btn').forEach(btn => {
+                if (btn.innerText.trim() === emoji) {
+                    btn.className = "avatar-btn p-2.5 rounded-xl bg-indigo-600/30 border-2 border-indigo-500 text-2xl flex items-center justify-center transition";
+                } else {
+                    btn.className = "avatar-btn p-2.5 rounded-xl bg-slate-950 border border-slate-700 hover:border-slate-500 text-2xl flex items-center justify-center transition";
+                }
+            });
+        }
+
+        async function submitAuth() {
+            const username = document.getElementById('auth-username').value.trim();
+            const password = document.getElementById('auth-password').value.trim();
+            const errBox = document.getElementById('auth-error');
+            errBox.classList.add('hidden');
+
+            const res = await fetch(`/api/auth/${authMode}`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({username, password, avatar: selectedAvatar})
+            });
+            const data = await res.json();
+            if (!res.ok) {
+                errBox.innerText = data.detail || 'Błąd autoryzacji';
+                errBox.classList.remove('hidden');
+                return;
+            }
+            currentUser = data.username;
+            currentAvatar = data.avatar || selectedAvatar;
+            localStorage.setItem('cloudshort_user', currentUser);
+            localStorage.setItem('cloudshort_avatar', currentAvatar);
+            checkAuth();
+        }
+
+        function logout() {
+            localStorage.removeItem('cloudshort_user');
+            localStorage.removeItem('cloudshort_avatar');
+            currentUser = null;
+            closeLogs();
+            checkAuth();
+        }
+
+        // Kopiowanie krótkiego linku do schowka
+        function copyLink(url, btnElement) {
+            navigator.clipboard.writeText(url);
+            const originalHtml = btnElement.innerHTML;
+            btnElement.innerHTML = "✅ Skopiowano!";
+            btnElement.classList.add("bg-emerald-600/30", "text-emerald-300", "border-emerald-500/50");
+            setTimeout(() => {
+                btnElement.innerHTML = originalHtml;
+                btnElement.classList.remove("bg-emerald-600/30", "text-emerald-300", "border-emerald-500/50");
+            }, 1500);
+        }
+
+        // Powiększanie kodu QR w oknie modalnym
+        function openQrModal(shortUrl) {
+            const largeQrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(shortUrl)}`;
+            document.getElementById('qr-modal-img').src = largeQrUrl;
+            document.getElementById('qr-modal-url').innerText = shortUrl;
+            document.getElementById('qr-modal').classList.remove('hidden');
+        }
+
+        function closeQrModal(event) {
+            document.getElementById('qr-modal').classList.add('hidden');
+        }
+
+        function copyFromModal() {
+            const url = document.getElementById('qr-modal-url').innerText;
+            const btn = document.getElementById('qr-modal-copy-btn');
+            navigator.clipboard.writeText(url);
+            btn.innerText = "✅ Skopiowano link!";
+            setTimeout(() => { btn.innerText = "📋 Skopiuj link do schowka"; }, 1500);
+        }
 
         function toggleCountry(code) {
             const input = document.getElementById('geo-input');
@@ -252,6 +399,7 @@
                 document.getElementById('auth-screen').classList.add('hidden');
                 document.getElementById('dashboard-screen').classList.remove('hidden');
                 document.getElementById('current-user-label').innerText = currentUser;
+                document.getElementById('current-user-avatar').innerText = currentAvatar;
                 loadLinks();
                 if (!liveInterval) {
                     liveInterval = setInterval(() => {
@@ -264,31 +412,6 @@
                 document.getElementById('dashboard-screen').classList.add('hidden');
                 if (liveInterval) { clearInterval(liveInterval); liveInterval = null; }
             }
-        }
-
-        async function handleAuth(mode) {
-            const username = document.getElementById('auth-username').value.trim();
-            const password = document.getElementById('auth-password').value.trim();
-            const errBox = document.getElementById('auth-error');
-            errBox.classList.add('hidden');
-
-            const res = await fetch(`/api/auth/${mode}`, {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({username, password})
-            });
-            const data = await res.json();
-            if (!res.ok) { errBox.innerText = data.detail || 'Błąd autoryzacji'; errBox.classList.remove('hidden'); return; }
-            currentUser = data.username;
-            localStorage.setItem('cloudshort_user', currentUser);
-            checkAuth();
-        }
-
-        function logout() {
-            localStorage.removeItem('cloudshort_user');
-            currentUser = null;
-            closeLogs();
-            checkAuth();
         }
 
         async function loadLinks() {
@@ -308,7 +431,7 @@
 
             tbody.innerHTML = links.map(l => {
                 const shortUrl = `${window.location.origin}/s/${l.short_code}`;
-                const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(shortUrl)}`;
+                const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(shortUrl)}`;
                 const isBlocked = l.status === 'BLOCKED_BY_AI';
                 const firstBlockedCountry = l.blocked_countries ? l.blocked_countries.split(',')[0].trim() : 'IN';
 
@@ -330,14 +453,24 @@
                 return `
                     <tr class="${isBlocked ? 'bg-rose-950/20' : 'hover:bg-slate-800/40'} transition">
                         <td class="p-4">
-                            <a href="${shortUrl}" target="_blank" class="font-mono font-bold text-base ${isBlocked ? 'text-rose-400 line-through' : 'text-indigo-400 hover:text-indigo-300'}">
-                                /s/${l.short_code} ↗
-                            </a>
-                            <div class="text-xs text-slate-400 truncate max-w-[210px] mt-0.5" title="${l.target_url}">${l.target_url}</div>
+                            <div class="flex items-center gap-2">
+                                <a href="${shortUrl}" target="_blank" class="font-mono font-bold text-base ${isBlocked ? 'text-rose-400 line-through' : 'text-indigo-400 hover:text-indigo-300'}">
+                                    /s/${l.short_code} ↗
+                                </a>
+                                <button onclick="copyLink('${shortUrl}', this)" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 px-2 py-0.5 rounded-md text-[11px] font-semibold transition">
+                                    📋 Kopiuj
+                                </button>
+                            </div>
+                            <div class="text-xs text-slate-400 truncate max-w-[230px] mt-1" title="${l.target_url}">${l.target_url}</div>
                         </td>
                         <td class="p-4">${geoBadge}</td>
                         <td class="p-4">
-                            <img src="${qrUrl}" alt="QR" class="w-11 h-11 rounded-lg bg-white p-1 shadow">
+                            <button onclick="openQrModal('${shortUrl}')" class="group relative bg-white p-1 rounded-lg shadow hover:scale-110 transition" title="Kliknij, aby powiększyć kod QR">
+                                <img src="${qrUrl}" alt="QR" class="w-11 h-11">
+                                <span class="hidden group-hover:flex absolute inset-0 bg-black/60 text-white text-[9px] font-bold items-center justify-center rounded-lg">
+                                    🔍 Powiększ
+                                </span>
+                            </button>
                         </td>
                         <td class="p-4">
                             <span class="bg-slate-800 border border-slate-700 text-white px-3 py-1 rounded-lg font-bold">${l.clicks}</span>
