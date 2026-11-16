@@ -11,8 +11,8 @@ from datetime import datetime
 
 app = FastAPI(
     title="CloudShort AI & Geo-Shield API",
-    description="Chmurowy mikroserwis URL z dwoma modułami innowacyjnymi: AI Anti-DDoS oraz Geo-Fencing.",
-    version="5.0.0"
+    description="Chmurowy mikroserwis URL z autoryzacją, AI Anti-DDoS oraz Geo-Fencing.",
+    version="6.0.0"
 )
 
 app.add_middleware(
@@ -28,6 +28,7 @@ app.add_middleware(
 class AuthDTO(BaseModel):
     username: str
     password: str
+    avatar: Optional[str] = "👨‍💻"
 
 class LinkCreateDTO(BaseModel):
     target_url: str
@@ -82,23 +83,19 @@ def render_block_page(title: str, badge: str, code_status: str, subtitle: str, d
     <body class="text-white min-h-screen flex items-center justify-center p-6 font-sans">
         <div class="max-w-lg w-full bg-slate-900/80 backdrop-blur-xl border border-slate-700/80 rounded-3xl p-8 shadow-2xl text-center relative overflow-hidden">
             <div class="absolute top-0 left-0 w-full h-1.5" style="background: {accent_color};"></div>
-            
             <div class="w-20 h-20 mx-auto mb-6 rounded-2xl flex items-center justify-center text-4xl shadow-lg border border-white/10" style="background: {accent_color}22;">
                 {icon}
             </div>
-
             <span class="inline-block px-3.5 py-1 rounded-full text-xs font-bold tracking-wider uppercase mb-4 border" 
                   style="color: {accent_color}; border-color: {accent_color}55; background: {accent_color}15;">
                 {badge} • {code_status}
             </span>
-
             <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight text-white mb-3">{title}</h1>
             <p class="text-slate-400 text-sm leading-relaxed mb-6">{subtitle}</p>
-
             <div class="bg-slate-950/90 border border-slate-800 rounded-2xl p-4 text-left font-mono text-xs space-y-2 mb-6">
                 <div class="flex justify-between text-slate-500">
                     <span>SYSTEM OCHRONY:</span>
-                    <span class="text-slate-300 font-semibold">CloudShort Edge Security v5.0</span>
+                    <span class="text-slate-300 font-semibold">CloudShort Edge Security</span>
                 </div>
                 <div class="flex justify-between text-slate-500">
                     <span>SZCZEGÓŁY ZDARZENIA:</span>
@@ -109,7 +106,6 @@ def render_block_page(title: str, badge: str, code_status: str, subtitle: str, d
                     <span class="text-slate-300">{datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")}</span>
                 </div>
             </div>
-
             <a href="/" class="inline-flex items-center justify-center w-full py-3 px-6 rounded-xl font-semibold text-sm bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition">
                 ← Powrót do panelu CloudShort
             </a>
@@ -220,9 +216,16 @@ class LinkRepository:
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     username TEXT UNIQUE NOT NULL,
                     password_hash TEXT NOT NULL,
+                    avatar TEXT DEFAULT '👨‍💻',
                     created_at TEXT NOT NULL
                 );
             """)
+            # Migracja kolumny avatar dla istniejących baz
+            try:
+                conn.execute("ALTER TABLE users ADD COLUMN avatar TEXT DEFAULT '👨‍💻';")
+            except sqlite3.OperationalError:
+                pass
+
             conn.execute("""
                 CREATE TABLE IF NOT EXISTS links (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -252,25 +255,25 @@ class LinkRepository:
                 );
             """)
 
-    def create_user(self, username: str, password_hash: str) -> bool:
+    def create_user(self, username: str, password_hash: str, avatar: str) -> bool:
         now = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
         try:
             with self._get_conn() as conn:
                 conn.execute(
-                    "INSERT INTO users (username, password_hash, created_at) VALUES (?, ?, ?)",
-                    (username, password_hash, now)
+                    "INSERT INTO users (username, password_hash, avatar, created_at) VALUES (?, ?, ?, ?)",
+                    (username, password_hash, avatar, now)
                 )
             return True
         except sqlite3.IntegrityError:
             return False
 
-    def verify_user(self, username: str, password_hash: str) -> bool:
+    def verify_user(self, username: str, password_hash: str) -> Optional[dict]:
         with self._get_conn() as conn:
             row = conn.execute(
-                "SELECT * FROM users WHERE username = ? AND password_hash = ?",
+                "SELECT username, avatar FROM users WHERE username = ? AND password_hash = ?",
                 (username, password_hash)
             ).fetchone()
-            return row is not None
+            return dict(row) if row else None
 
     def save(self, owner: str, short_code: str, target_url: str, blocked_countries: str, created_at: str) -> dict:
         clean_geo = ",".join([c.strip().upper() for c in blocked_countries.split(",") if c.strip()])
@@ -442,16 +445,18 @@ def register_user(dto: AuthDTO):
     username = dto.username.strip().lower()
     if len(username) < 3 or len(dto.password) < 3:
         raise HTTPException(status_code=400, detail="Login i hasło muszą mieć min. 3 znaki")
-    if not repository.create_user(username, service.hash_password(dto.password)):
-        raise HTTPException(status_code=409, detail="Użytkownik już istnieje")
-    return {"status": "registered", "username": username}
+    avatar = dto.avatar or "👨‍💻"
+    if not repository.create_user(username, service.hash_password(dto.password), avatar):
+        raise HTTPException(status_code=409, detail="Użytkownik o takiej nazwie już istnieje")
+    return {"status": "registered", "username": username, "avatar": avatar}
 
 @app.post("/api/auth/login")
 def login_user(dto: AuthDTO):
     username = dto.username.strip().lower()
-    if not repository.verify_user(username, service.hash_password(dto.password)):
+    user = repository.verify_user(username, service.hash_password(dto.password))
+    if not user:
         raise HTTPException(status_code=401, detail="Nieprawidłowy login lub hasło")
-    return {"status": "logged_in", "username": username}
+    return {"status": "logged_in", "username": user["username"], "avatar": user["avatar"] or "👨‍💻"}
 
 @app.post("/api/links", response_model=LinkEntity)
 def create_link(dto: LinkCreateDTO, x_user: str = Header(default="guest")):
