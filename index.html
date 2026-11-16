@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CloudShort AI & Geo-Shield</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background-color: #060913;
+            background-image: 
+                radial-gradient(circle at 15% 15%, rgba(99, 102, 241, 0.15) 0%, transparent 45%),
+                radial-gradient(circle at 85% 20%, rgba(14, 165, 233, 0.12) 0%, transparent 45%),
+                linear-gradient(to right, rgba(30, 41, 59, 0.25) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(30, 41, 59, 0.25) 1px, transparent 1px);
+            background-size: 100% 100%, 100% 100%, 36px 36px, 36px 36px;
+        }
+        .glass-card {
+            background: rgba(15, 23, 42, 0.72);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(51, 65, 85, 0.7);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade {
+            animation: fadeIn 0.3s ease-out forwards;
+        }
+    </style>
+</head>
+<body class="text-slate-100 min-h-screen font-sans antialiased">
+
+    <!-- ========================================== -->
+    <!-- EKRAN LOGOWANIA (GLASSMORPHISM AUTH)       -->
+    <!-- ========================================== -->
+    <div id="auth-screen" class="min-h-screen flex items-center justify-center p-4">
+        <div class="glass-card p-8 md:p-10 rounded-3xl shadow-2xl w-full max-w-md relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-sky-500"></div>
+
+            <div class="text-center mb-8">
+                <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-indigo-500/20 to-sky-500/20 border border-indigo-500/30 flex items-center justify-center text-3xl shadow-lg">
+                    🛡️
+                </div>
+                <h1 class="text-3xl font-extrabold bg-gradient-to-r from-indigo-400 via-purple-300 to-sky-400 bg-clip-text text-transparent">
+                    CloudShort Shield
+                </h1>
+                <p class="text-slate-400 text-xs mt-2 tracking-wide uppercase font-semibold">
+                    AI Anti-DDoS & Edge Geo-Fencing Platform
+                </p>
+            </div>
+
+            <div id="auth-error" class="hidden bg-rose-500/15 border border-rose-500/50 text-rose-300 text-xs p-3.5 rounded-xl mb-5 text-center"></div>
+
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs text-slate-400 uppercase font-bold tracking-wider mb-1.5">Nazwa użytkownika</label>
+                    <input id="auth-username" type="text" placeholder="np. danylo" 
+                           class="w-full bg-slate-950/80 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition">
+                </div>
+                <div>
+                    <label class="block text-xs text-slate-400 uppercase font-bold tracking-wider mb-1.5">Hasło dostępu</label>
+                    <input id="auth-password" type="password" placeholder="••••••••" 
+                           class="w-full bg-slate-950/80 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition">
+                </div>
+                <div class="grid grid-cols-2 gap-3 pt-3">
+                    <button onclick="handleAuth('login')" class="bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-400 py-3 rounded-xl font-bold text-sm shadow-lg shadow-indigo-500/20 transition">
+                        🔑 Zaloguj się
+                    </button>
+                    <button onclick="handleAuth('register')" class="bg-slate-800 hover:bg-slate-700 border border-slate-600 py-3 rounded-xl font-bold text-sm transition">
+                        ✨ Rejestracja
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- GŁÓWNY PANEL UŻYTKOWNIKA (DASHBOARD)       -->
+    <!-- ========================================== -->
+    <div id="dashboard-screen" class="hidden p-6 md:p-10 max-w-7xl mx-auto">
+        <!-- Górny pasek nawigacji -->
+        <header class="glass-card rounded-2xl p-5 mb-8 flex flex-col md:flex-row justify-between items-center gap-4 shadow-xl">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-600 to-sky-500 flex items-center justify-center text-2xl shadow-lg shadow-indigo-500/20">
+                    🛡️
+                </div>
+                <div>
+                    <div class="flex flex-wrap items-center gap-2.5">
+                        <h1 class="text-2xl font-extrabold tracking-tight text-white">CloudShort Shield</h1>
+                        <span class="bg-purple-500/15 text-purple-300 text-[11px] font-bold px-2.5 py-0.5 rounded-full border border-purple-500/30">
+                            🤖 AI Anti-DDoS
+                        </span>
+                        <span class="bg-sky-500/15 text-sky-300 text-[11px] font-bold px-2.5 py-0.5 rounded-full border border-sky-500/30">
+                            🌍 Geo-Fencing
+                        </span>
+                        <span class="bg-emerald-500/15 text-emerald-300 text-[11px] font-bold px-2.5 py-0.5 rounded-full border border-emerald-500/30 flex items-center gap-1.5">
+                            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span> LIVE
+                        </span>
+                    </div>
+                    <p class="text-slate-400 text-xs mt-1">Chmurowa platforma zarządzania linkami z inteligentną ochroną przed atakami</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-3">
+                <div class="bg-slate-950/80 border border-slate-800 px-3.5 py-2 rounded-xl flex items-center gap-2 text-xs">
+                    <span class="w-2 h-2 rounded-full bg-indigo-400"></span>
+                    <span class="text-slate-400">Konto:</span>
+                    <span id="current-user-label" class="font-bold text-white"></span>
+                </div>
+                <a href="/docs" target="_blank" class="bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold px-3.5 py-2.5 rounded-xl border border-slate-700 transition">
+                    📄 Swagger API
+                </a>
+                <button onclick="logout()" class="bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 border border-rose-500/30 text-xs font-semibold px-3.5 py-2.5 rounded-xl transition">
+                    🚪 Wyloguj
+                </button>
+            </div>
+        </header>
+
+        <!-- Formularz tworzenia linku z przyciskami krajów -->
+        <div class="glass-card p-6 md:p-7 rounded-2xl mb-8 shadow-xl relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-indigo-500 to-sky-500"></div>
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-end">
+                <div class="lg:col-span-6">
+                    <label class="block text-xs text-slate-400 uppercase font-bold tracking-wider mb-2">
+                        🔗 Docelowy adres URL do skrócenia
+                    </label>
+                    <input id="url-input" type="text" placeholder="np. https://pwr.edu.pl lub https://twitch.tv/..." 
+                           class="w-full bg-slate-950/90 border border-slate-700 rounded-xl px-4 py-3.5 text-white text-sm focus:outline-none focus:border-indigo-500 transition">
+                </div>
+
+                <div class="lg:col-span-4">
+                    <label class="block text-xs text-sky-400 uppercase font-bold tracking-wider mb-2">
+                        🌍 Blokada regionalna (Geo-Block)
+                    </label>
+                    <input id="geo-input" type="text" value="IN" placeholder="np. IN,CN,BR (puste = brak)" 
+                           class="w-full bg-slate-950/90 border border-sky-500/40 rounded-xl px-4 py-3.5 text-white text-sm font-mono focus:outline-none focus:border-sky-400 transition">
+                </div>
+
+                <div class="lg:col-span-2">
+                    <button onclick="createLink()" class="w-full bg-gradient-to-r from-indigo-600 to-sky-500 hover:from-indigo-500 hover:to-sky-400 py-3.5 px-5 rounded-xl font-bold text-sm shadow-lg shadow-indigo-500/25 transition transform active:scale-95">
+                        ✂️ Utwórz link
+                    </button>
+                </div>
+            </div>
+
+            <!-- Szybki wybór krajów (Flagi) -->
+            <div class="mt-4 pt-4 border-t border-slate-800/80 flex flex-wrap items-center gap-2 text-xs">
+                <span class="text-slate-400 mr-1">Szybkie dodawanie blokady kraju:</span>
+                <button type="button" onclick="toggleCountry('IN')" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-sky-500/20 border border-slate-700 hover:border-sky-500/50 transition">🇮🇳 Indie (IN)</button>
+                <button type="button" onclick="toggleCountry('CN')" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-sky-500/20 border border-slate-700 hover:border-sky-500/50 transition">🇨🇳 Chiny (CN)</button>
+                <button type="button" onclick="toggleCountry('US')" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-sky-500/20 border border-slate-700 hover:border-sky-500/50 transition">🇺🇸 USA (US)</button>
+                <button type="button" onclick="toggleCountry('DE')" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-sky-500/20 border border-slate-700 hover:border-sky-500/50 transition">🇩🇪 Niemcy (DE)</button>
+                <button type="button" onclick="toggleCountry('BR')" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-sky-500/20 border border-slate-700 hover:border-sky-500/50 transition">🇧🇷 Brazylia (BR)</button>
+                <button type="button" onclick="document.getElementById('geo-input').value=''" class="px-2.5 py-1 rounded-lg text-slate-400 hover:text-white underline ml-auto">Wyczyść kraje</button>
+            </div>
+        </div>
+
+        <!-- Karty KPI -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+            <div class="glass-card p-5 rounded-2xl">
+                <div class="flex justify-between items-start">
+                    <p class="text-slate-400 text-xs uppercase font-bold tracking-wider">Aktywne linki</p>
+                    <span class="text-lg">🔗</span>
+                </div>
+                <p id="total-links" class="text-3xl font-extrabold text-white mt-2">0</p>
+            </div>
+            <div class="glass-card p-5 rounded-2xl">
+                <div class="flex justify-between items-start">
+                    <p class="text-slate-400 text-xs uppercase font-bold tracking-wider">Dozwolone przejścia</p>
+                    <span class="text-lg">✅</span>
+                </div>
+                <p id="total-clicks" class="text-3xl font-extrabold text-emerald-400 mt-2">0</p>
+            </div>
+            <div class="glass-card p-5 rounded-2xl">
+                <div class="flex justify-between items-start">
+                    <p class="text-slate-400 text-xs uppercase font-bold tracking-wider">Zablokowane ataki AI</p>
+                    <span class="text-lg">⛔</span>
+                </div>
+                <p id="blocked-links" class="text-3xl font-extrabold text-rose-400 mt-2">0</p>
+            </div>
+            <div class="glass-card p-5 rounded-2xl">
+                <div class="flex justify-between items-start">
+                    <p class="text-slate-400 text-xs uppercase font-bold tracking-wider">Status Ochrony</p>
+                    <span class="text-lg">⚡</span>
+                </div>
+                <p class="text-sm font-bold text-sky-400 mt-3">AI Guard + Geo-Fencing<br><span class="text-xs text-slate-400 font-normal">Aktywne skanowanie 24/7</span></p>
+            </div>
+        </div>
+
+        <!-- Tabela linków -->
+        <div class="glass-card rounded-2xl overflow-hidden shadow-xl mb-8">
+            <div class="p-5 border-b border-slate-800 flex justify-between items-center">
+                <h2 class="font-bold text-slate-100 flex items-center gap-2">
+                    <span>📡</span> Monitorowane linki i telemetria bezpieczeństwa
+                </h2>
+                <span class="text-xs text-emerald-400 font-mono">Odświeżanie: 1.5s</span>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead class="bg-slate-950/60 text-slate-400 text-[11px] uppercase tracking-wider">
+                        <tr>
+                            <th class="p-4">Skrócony link</th>
+                            <th class="p-4">Geo-Block</th>
+                            <th class="p-4">Kod QR</th>
+                            <th class="p-4">Ruch</th>
+                            <th class="p-4">Ocena Ryzyka AI</th>
+                            <th class="p-4 text-right">Symulacja Ataków i Akcje</th>
+                        </tr>
+                    </thead>
+                    <tbody id="links-table" class="divide-y divide-slate-800/70 text-sm"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Okno Logów NA ŻYWO -->
+        <div id="logs-modal" class="hidden glass-card rounded-2xl p-6 border-purple-500/40 shadow-2xl mb-8 animate-fade">
+            <div class="flex justify-between items-center mb-4 pb-3 border-b border-slate-800">
+                <div class="flex items-center gap-3">
+                    <span class="text-xl">📊</span>
+                    <h3 id="logs-title" class="font-bold text-purple-300">Strumień logów bezpieczeństwa na żywo</h3>
+                    <span class="bg-emerald-500/20 text-emerald-300 text-[10px] font-bold px-2.5 py-0.5 rounded-full border border-emerald-500/30 animate-pulse">
+                        ● LIVE STREAM
+                    </span>
+                </div>
+                <button onclick="closeLogs()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1 rounded-lg text-xs font-semibold transition">
+                    ✖ Zamknij
+                </button>
+            </div>
+            <div id="logs-content" class="text-xs font-mono space-y-2.5 max-h-80 overflow-y-auto pr-2"></div>
+        </div>
+    </div>
+
+    <script>
+        let currentUser = localStorage.getItem('cloudshort_user') || null;
+        let activeLogCode = null;
+        let liveInterval = null;
+
+        function toggleCountry(code) {
+            const input = document.getElementById('geo-input');
+            let list = input.value.split(',').map(c => c.trim().toUpperCase()).filter(Boolean);
+            if (list.includes(code)) {
+                list = list.filter(c => c !== code);
+            } else {
+                list.push(code);
+            }
+            input.value = list.join(', ');
+        }
+
+        function checkAuth() {
+            if (currentUser) {
+                document.getElementById('auth-screen').classList.add('hidden');
+                document.getElementById('dashboard-screen').classList.remove('hidden');
+                document.getElementById('current-user-label').innerText = currentUser;
+                loadLinks();
+                if (!liveInterval) {
+                    liveInterval = setInterval(() => {
+                        loadLinks();
+                        if (activeLogCode) fetchLogsData(activeLogCode);
+                    }, 1500);
+                }
+            } else {
+                document.getElementById('auth-screen').classList.remove('hidden');
+                document.getElementById('dashboard-screen').classList.add('hidden');
+                if (liveInterval) { clearInterval(liveInterval); liveInterval = null; }
+            }
+        }
+
+        async function handleAuth(mode) {
+            const username = document.getElementById('auth-username').value.trim();
+            const password = document.getElementById('auth-password').value.trim();
+            const errBox = document.getElementById('auth-error');
+            errBox.classList.add('hidden');
+
+            const res = await fetch(`/api/auth/${mode}`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({username, password})
+            });
+            const data = await res.json();
+            if (!res.ok) { errBox.innerText = data.detail || 'Błąd autoryzacji'; errBox.classList.remove('hidden'); return; }
+            currentUser = data.username;
+            localStorage.setItem('cloudshort_user', currentUser);
+            checkAuth();
+        }
+
+        function logout() {
+            localStorage.removeItem('cloudshort_user');
+            currentUser = null;
+            closeLogs();
+            checkAuth();
+        }
+
+        async function loadLinks() {
+            if (!currentUser) return;
+            const res = await fetch('/api/links', { headers: {'X-User': currentUser} });
+            const links = await res.json();
+
+            document.getElementById('total-links').innerText = links.length;
+            document.getElementById('total-clicks').innerText = links.reduce((sum, l) => sum + l.clicks, 0);
+            document.getElementById('blocked-links').innerText = links.filter(l => l.status === 'BLOCKED_BY_AI').length;
+
+            const tbody = document.getElementById('links-table');
+            if (links.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-slate-400">Nie masz jeszcze żadnych linków. Wklej pierwszy adres URL powyżej!</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = links.map(l => {
+                const shortUrl = `${window.location.origin}/s/${l.short_code}`;
+                const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(shortUrl)}`;
+                const isBlocked = l.status === 'BLOCKED_BY_AI';
+                const firstBlockedCountry = l.blocked_countries ? l.blocked_countries.split(',')[0].trim() : 'IN';
+
+                const geoBadge = l.blocked_countries
+                    ? `<span class="inline-flex items-center gap-1 bg-sky-500/15 text-sky-300 border border-sky-500/30 px-2.5 py-1 rounded-lg text-xs font-mono font-bold">🚫 ${l.blocked_countries}</span>`
+                    : `<span class="text-slate-500 text-xs">🌐 Globalny</span>`;
+
+                const riskColor = l.ai_risk_score >= 75 ? 'bg-rose-500' : (l.ai_risk_score >= 35 ? 'bg-amber-500' : 'bg-emerald-500');
+                const statusBadge = isBlocked
+                    ? `<div class="space-y-1">
+                         <span class="inline-block bg-rose-500/20 text-rose-300 border border-rose-500/40 px-2.5 py-0.5 rounded-full text-xs font-bold">⛔ ZABLOKOWANY (${l.ai_risk_score}%)</span>
+                         <div class="w-28 h-1.5 bg-slate-800 rounded-full overflow-hidden"><div class="h-full ${riskColor}" style="width: ${l.ai_risk_score}%"></div></div>
+                       </div>`
+                    : `<div class="space-y-1">
+                         <span class="inline-block bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 px-2.5 py-0.5 rounded-full text-xs font-bold">🛡️ BEZPIECZNY (${l.ai_risk_score}%)</span>
+                         <div class="w-28 h-1.5 bg-slate-800 rounded-full overflow-hidden"><div class="h-full ${riskColor}" style="width: ${Math.max(8, l.ai_risk_score)}%"></div></div>
+                       </div>`;
+
+                return `
+                    <tr class="${isBlocked ? 'bg-rose-950/20' : 'hover:bg-slate-800/40'} transition">
+                        <td class="p-4">
+                            <a href="${shortUrl}" target="_blank" class="font-mono font-bold text-base ${isBlocked ? 'text-rose-400 line-through' : 'text-indigo-400 hover:text-indigo-300'}">
+                                /s/${l.short_code} ↗
+                            </a>
+                            <div class="text-xs text-slate-400 truncate max-w-[210px] mt-0.5" title="${l.target_url}">${l.target_url}</div>
+                        </td>
+                        <td class="p-4">${geoBadge}</td>
+                        <td class="p-4">
+                            <img src="${qrUrl}" alt="QR" class="w-11 h-11 rounded-lg bg-white p-1 shadow">
+                        </td>
+                        <td class="p-4">
+                            <span class="bg-slate-800 border border-slate-700 text-white px-3 py-1 rounded-lg font-bold">${l.clicks}</span>
+                        </td>
+                        <td class="p-4">${statusBadge}</td>
+                        <td class="p-4 text-right space-x-1.5 whitespace-nowrap">
+                            <a href="${shortUrl}?sim_country=${firstBlockedCountry}" target="_blank" onclick="openLogs('${l.short_code}')" 
+                               class="inline-block bg-sky-600/90 hover:bg-sky-500 text-white px-3 py-1.5 rounded-lg text-xs font-semibold shadow transition">
+                                🌍 Test Geo (${firstBlockedCountry})
+                            </a>
+                            ${isBlocked 
+                                ? `<button onclick="unlockLink('${l.short_code}')" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 rounded-lg text-xs font-semibold shadow transition">🔓 Odblokuj</button>`
+                                : `<button onclick="simulateDDoS('${l.short_code}')" class="bg-amber-600/90 hover:bg-amber-500 text-white px-3 py-1.5 rounded-lg text-xs font-semibold shadow transition">⚡ Test DDoS</button>`
+                            }
+                            <button onclick="openLogs('${l.short_code}')" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 px-3 py-1.5 rounded-lg text-xs font-semibold transition">
+                                📊 Logi
+                            </button>
+                            <button onclick="deleteLink('${l.short_code}')" class="text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 p-1.5 rounded-lg text-xs transition" title="Usuń link">
+                                🗑️
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        async function createLink() {
+            const input = document.getElementById('url-input');
+            const geoInput = document.getElementById('geo-input');
+            if (!input.value.trim()) return;
+            await fetch('/api/links', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json', 'X-User': currentUser},
+                body: JSON.stringify({target_url: input.value, blocked_countries: geoInput.value})
+            });
+            input.value = '';
+            loadLinks();
+        }
+
+        async function simulateDDoS(code) {
+            openLogs(code);
+            await fetch(`/api/links/${code}/simulate-ddos`, { method: 'POST', headers: {'X-User': currentUser} });
+            loadLinks();
+            fetchLogsData(code);
+        }
+
+        async function unlockLink(code) {
+            await fetch(`/api/links/${code}/unlock`, { method: 'POST', headers: {'X-User': currentUser} });
+            loadLinks();
+            if (activeLogCode === code) fetchLogsData(code);
+        }
+
+        function openLogs(code) {
+            activeLogCode = code;
+            document.getElementById('logs-modal').classList.remove('hidden');
+            document.getElementById('logs-title').innerText = `Telemetria AI & Geo-Fencing na żywo: /s/${code}`;
+            fetchLogsData(code);
+        }
+
+        function closeLogs() {
+            activeLogCode = null;
+            document.getElementById('logs-modal').classList.add('hidden');
+        }
+
+        async function fetchLogsData(code) {
+            if (!currentUser || !code) return;
+            const res = await fetch(`/api/links/${code}/logs`, { headers: {'X-User': currentUser} });
+            const logs = await res.json();
+            const content = document.getElementById('logs-content');
+
+            if (logs.length === 0) {
+                content.innerHTML = `<p class="text-slate-400 py-4 text-center">Oczekiwanie na pierwsze kliknięcia w link...</p>`;
+            } else {
+                content.innerHTML = logs.map(log => `
+                    <div class="p-3 rounded-xl border flex flex-wrap justify-between items-center gap-2 animate-fade ${log.is_anomaly ? 'bg-rose-950/30 border-rose-500/40 text-rose-200' : 'bg-slate-950/60 border-slate-800'}">
+                        <div class="flex items-center gap-2">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-bold ${log.is_anomaly ? 'bg-rose-500/20 text-rose-300' : 'bg-emerald-500/20 text-emerald-300'}">
+                                ${log.is_anomaly ? '⛔ ZABLOKOWANO' : '✅ DOZWOLONO'}
+                            </span>
+                            <span class="px-2 py-0.5 rounded bg-sky-500/15 text-sky-300 font-bold">Kraj: ${log.country}</span>
+                            <span class="font-semibold">${log.block_reason}</span>
+                        </div>
+                        <div class="text-slate-400 text-[11px]">
+                            🕒 ${log.clicked_at} • IP: <span class="text-slate-300">${log.ip_hash}</span>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        async function deleteLink(code) {
+            await fetch(`/api/links/${code}`, { method: 'DELETE', headers: {'X-User': currentUser} });
+            if (activeLogCode === code) closeLogs();
+            loadLinks();
+        }
+
+        checkAuth();
+    </script>
+</body>
+</html>
